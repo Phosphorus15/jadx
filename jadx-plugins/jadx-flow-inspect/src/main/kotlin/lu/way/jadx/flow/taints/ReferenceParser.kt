@@ -14,12 +14,12 @@ class ReferenceParser(val plugin: FlowInspectPlugin) {
 
 	fun resolveClassByQualifiedMethodName(fullName: String): JavaClass? {
 		val methodDef = MethodParser.parseMethodDefinition(fullName)
-		return plugin.loadedInfo.decompiler.searchJavaClassByOrigFullName(methodDef.className)
+		return plugin.loadedInfo.decompiler.searchJavaClassByOrigFullName(methodDef.className.replace("$", "."))
 	}
 
 	fun findMethodByQualifiedName(fullName: String): MethodNode? {
 		val methodDef = MethodParser.parseMethodDefinition(fullName)
-		return findMethod(methodDef.methodName, methodDef.className, methodDef.returnType, methodDef.parameterTypes)
+		return findMethod(methodDef.methodName, methodDef.className.replace("$", "."), methodDef.returnType, methodDef.parameterTypes)
 	}
 
 	private fun convertToFlattenType(typeString: String): ArgType {

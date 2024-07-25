@@ -1,12 +1,15 @@
 package lu.way.jadx.flow.gui
 
 import lu.way.jadx.flow.taints.FlowdroidStatement
+import lu.way.jadx.flow.taints.TaintPath
 import lu.way.jadx.flow.taints.TaintResult
 import java.awt.Component
 import javax.swing.JTree
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.DefaultTreeModel
+
+data class TrackedSource(val statement: FlowdroidStatement, val taintPath: TaintPath)
 
 class TaintTreeModel(private val taintResult: TaintResult, preferredName: String = "Results") :
 	DefaultTreeModel(DefaultMutableTreeNode(preferredName)) {
@@ -18,7 +21,7 @@ class TaintTreeModel(private val taintResult: TaintResult, preferredName: String
 			val node = sinksSet.computeIfAbsent(pair.sink) {
 				DefaultMutableTreeNode(pair.sink)
 			}
-			node.add(DefaultMutableTreeNode(pair.source))
+			node.add(DefaultMutableTreeNode(TrackedSource(pair.source, pair)))
 		}
 
 		for (p in sinksSet.values) {
@@ -39,6 +42,12 @@ class TaintTreeRenderer : DefaultTreeCellRenderer() {
 		hasFocus: Boolean,
 	): Component {
 		super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus)
+
+		if (value is TrackedSource) {
+			text = value.statement.toString()
+		} else if (value is FlowdroidStatement) {
+			text = value.toString()
+		}
 
 		return this
 	}

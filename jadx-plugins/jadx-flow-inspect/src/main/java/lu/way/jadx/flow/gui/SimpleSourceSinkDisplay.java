@@ -11,7 +11,6 @@ import javax.swing.tree.TreeSelectionModel;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
-
 import lu.way.jadx.flow.taints.FlowdroidStatement;
 
 public class SimpleSourceSinkDisplay extends JDialog {
@@ -73,6 +72,9 @@ public class SimpleSourceSinkDisplay extends JDialog {
 		if (component instanceof DefaultMutableTreeNode) {
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) component;
 			Object user = node.getUserObject();
+			if (user instanceof TrackedSource) {
+				delegate.gotoMethodReference(((TrackedSource) user).getStatement().getMethod());
+			}
 			if (user instanceof FlowdroidStatement) {
 				delegate.gotoMethodReference(((FlowdroidStatement) user).getMethod());
 			}
@@ -80,8 +82,14 @@ public class SimpleSourceSinkDisplay extends JDialog {
 	}
 
 	private void onOK() {
-		// add your code here
-		delegate.startGraphView();
+		Object component = sourcesinkTree.getLastSelectedPathComponent();
+		if (component instanceof DefaultMutableTreeNode) {
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) component;
+			Object user = node.getUserObject();
+			if (user instanceof TrackedSource) {
+				delegate.startPathView((TrackedSource) user);
+			}
+		}
 	}
 
 	private void onCancel() {
