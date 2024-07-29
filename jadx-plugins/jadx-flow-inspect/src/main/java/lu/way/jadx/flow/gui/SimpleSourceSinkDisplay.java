@@ -59,6 +59,15 @@ public class SimpleSourceSinkDisplay extends JDialog {
 				onGoto();
 			}
 		});
+
+		sourcesinkTree.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+					onOK();
+				}
+			}
+		});
 	}
 
 	public void modelUpdate() {
@@ -69,6 +78,7 @@ public class SimpleSourceSinkDisplay extends JDialog {
 
 	private void onGoto() {
 		Object component = sourcesinkTree.getLastSelectedPathComponent();
+		if (component == null) return;
 		if (component instanceof DefaultMutableTreeNode) {
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) component;
 			Object user = node.getUserObject();
@@ -83,6 +93,7 @@ public class SimpleSourceSinkDisplay extends JDialog {
 
 	private void onOK() {
 		Object component = sourcesinkTree.getLastSelectedPathComponent();
+		if (component == null) return;
 		if (component instanceof DefaultMutableTreeNode) {
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) component;
 			Object user = node.getUserObject();

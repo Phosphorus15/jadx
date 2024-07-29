@@ -89,6 +89,29 @@ public class MethodParser {
 		}
 	}
 
+	/**
+	 * Return a parsed method with only field definition info
+	 *
+	 * @param methodDefinition
+	 * @return
+	 */
+	public static ParsedMethod parseField(String methodDefinition) {
+		// Regular expression pattern to parse the method definition
+		String regex = "<([^:]+):\\s+([^\\s]+)\\s+([^\\(]+)>";
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(methodDefinition);
+
+		if (matcher.matches()) {
+			String className = matcher.group(1);
+			String returnType = matcher.group(2);
+			String methodName = matcher.group(3);
+
+			return new ParsedMethod(className, returnType, methodName, null);
+		} else {
+			throw new IllegalArgumentException("Invalid method definition format");
+		}
+	}
+
 	public static void main(String[] args) {
 		String methodDefinition =
 				"<com.startapp.android.publish.c.b: com.startapp.android.publish.c.b a(android.app.Activity,android.content.Intent,com.startapp.android.publish.model.AdPreferences$Placement)>";

@@ -25,6 +25,21 @@ class FlowGUIDelegate(val plugin: FlowInspectPlugin) {
 		}
 	}
 
+	fun gotoFieldReference(field: String) {
+		plugin.referenceParser.resolveClassByQualifiedMFieldName(field)!!.let { clz ->
+			println(clz.javaClass.typeName)
+			plugin.referenceParser.findFieldByQualifiedName(field)!!.let {
+				val field = clz.fields.filter { cur-> cur.name == it.name && cur.declaringClass == it.parentClass.javaNode }
+				if (field.size > 1)
+					throw Exception("Found multiple fields of $field")
+				else if (field.size == 1) {
+					val fieldVal = field[0]
+					plugin.pluginContext.guiContext?.open(fieldVal!!.codeNodeRef)
+				}
+			}
+		}
+	}
+
 	fun gotoMethodReference(method: String) {
 		plugin.referenceParser.resolveClassByQualifiedMethodName(method)!!.let { clz ->
 			println(clz.javaClass.typeName)

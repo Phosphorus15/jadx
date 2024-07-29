@@ -1,5 +1,8 @@
 package lu.way.jadx.flow.taints
 
+import org.graphstream.algorithm.Dijkstra
+import org.graphstream.graph.Graph
+
 enum class PathSegmentType {
 	PATH,
 	SOURCE,
@@ -70,4 +73,78 @@ class TaintPathSummarize(val taintPath: TaintPath) {
 		}
 	}
 
+}
+
+class GraphSummary(val taintSummarize: TaintPathSummarize) {
+
+	fun updateSelectedMethod(graph: Graph, method: String) {
+		graph.nodes().forEach { node ->
+			if ((node.getAttribute("ui.class") ?: "") == "selected") {
+				node.setAttribute("ui.class", "")
+			}
+		}
+		graph.getNode(method)?.let { node ->
+			if (node.getAttribute("ui.class") != "source" && node.getAttribute("ui.class") != "sink") {
+				node.setAttribute("ui.class", "selected")
+			}
+		}
+	}
+
+	fun addMethodGraph(graph: Graph) {
+		graph.setAutoCreate(true)
+
+		val dijkstra = Dijkstra(null, null, null, null, null, null)
+		dijkstra.init(graph)
+
+		var lastKey = ""
+
+		taintSummarize.methodMaps.keys.forEachIndexed { ind, key ->
+			graph.addNode(key)
+			when {
+				ind == 0 -> {
+					graph.getNode(key).setAttribute("ui.class", "source")
+					dijkstra.setSource(key)
+				}
+
+				(key == taintSummarize.segmentMaps.values.last().method) -> {
+					graph.getNode(key)
+						.setAttribute("ui.class", "sink")
+					lastKey = key
+					dijkstra.setTarget(key)
+				}
+
+				else -> graph.getNode(key).setAttribute("ui.class", "flow")
+			}
+		}
+
+		var lastMethod: String? = null
+		var lastId = 0
+		var sequenceCount = 0
+		for (node in taintSummarize.segmentMaps.values) {
+			if (lastMethod != null) {
+				val id = node.id
+				val edgeId = "${lastMethod}-${node.method}"
+
+//				if (graph.getEdge("${node.method}-${lastMethod}") != null)
+//					edgeId = "${node.method}-${lastMethod}"
+
+				val edge = graph.getEdge(edgeId) ?: graph.addEdge(edgeId, lastMethod, node.method, true)
+
+				if (edge.getAttribute("seq") == null) {
+					edge.setAttribute("seq", "$sequenceCount")
+				} else {
+					edge.setAttribute("seq", "${edge.getAttribute("seq")}, $sequenceCount")
+				}
+
+			}
+			lastMethod = node.method
+			lastId = node.id
+			sequenceCount += 1
+		}
+
+		dijkstra.compute()
+
+		for (e in dijkstra.getPathEdges(graph.getNode(lastKey)))
+			e.setAttribute("ui.style", "fill-color: red;")
+	}
 }

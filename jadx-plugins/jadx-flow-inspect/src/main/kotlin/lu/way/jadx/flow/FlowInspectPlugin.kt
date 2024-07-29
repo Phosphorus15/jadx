@@ -47,6 +47,9 @@ class FlowInspectPlugin : JadxPlugin {
 		}
 		pluginContext = context!!
 		loadOnce = true
+
+		System.setProperty("org.graphstream.ui", "swing");
+
 		context.registerOptions(scriptOptions)
 		context.addPass(loadedInfo)
 		context.addCodeInput(flowCodeInput)
